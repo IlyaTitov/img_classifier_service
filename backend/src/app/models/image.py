@@ -14,3 +14,6 @@ class Image(Base):
         back_populates="image",
         cascade="all, delete-orphan",
     )
+
+    original_path: Mapped[str] = mapped_column(nullable=False)
+    processed_path: Mapped[str] = mapped_column(nullable=False)
