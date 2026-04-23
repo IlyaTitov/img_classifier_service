@@ -11,9 +11,9 @@ async def get_all(session: AsyncSession) -> List[Image]:
     return result.scalars().all()
 
 
-async def create(session: AsyncSession, image_in) -> Image:
-    new_image = Image(**image_in.model_dump())
+async def create(session: AsyncSession, name: str, original_path: str) -> Image:
+    new_image = Image(name=name, original_path=original_path)
     session.add(new_image)
     await session.commit()
-    await session.refresh()
+    await session.refresh(new_image)
     return new_image

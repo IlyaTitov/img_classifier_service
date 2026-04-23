@@ -14,7 +14,7 @@ class ObjectType(Base):
 
 class Detection(Base):
     __tablename__ = "detection"
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
 
     image_id: Mapped[int] = mapped_column(ForeignKey("image.id"))
 
@@ -24,7 +24,7 @@ class Detection(Base):
     y_max: Mapped[float] = mapped_column(Float, nullable=False)
     x_min: Mapped[float] = mapped_column(Float, nullable=False)
     x_max: Mapped[float] = mapped_column(Float, nullable=False)
-    confidenc: Mapped[float] = mapped_column(Float, nullable=False)
+    confidence: Mapped[float] = mapped_column(Float, nullable=False)
 
     image: Mapped["Image"] = relationship(back_populates="detections")
     object_type: Mapped["ObjectType"] = relationship(back_populates="detections")
