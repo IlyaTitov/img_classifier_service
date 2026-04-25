@@ -65,6 +65,7 @@ async def upload(
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="Допускаются только изображения")
 
+    file_size = file.size
     os.makedirs(setting.upload_dir, exist_ok=True)
     file_path = os.path.join(setting.upload_dir, file.filename)
     try:
@@ -78,6 +79,7 @@ async def upload(
         name=file.filename,
         original_path=file_path,
         user_id=current_user.id,
+        file_size=file_size,
     )
 
     process_img.delay(image_id=new_image.id)

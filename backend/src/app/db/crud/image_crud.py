@@ -73,6 +73,7 @@ async def get_archive(
             "processed_filename": _basename(img.processed_path),
             "original_filename": _basename(img.original_path),
             "detection_count": count,
+            "file_size": img.file_size,
         }
         for img, count in rows
     ]

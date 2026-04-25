@@ -6,28 +6,36 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
 
-# 3. Системные зависимости (OpenCV + Postgres)
+# 3. Системные зависимости (Добавил build-essential для сборки библиотек)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     libgl1 \
     libglib2.0-0 \
+    build-essential \
+    gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# 4. Копируем только файлы зависимостей
+# 4. Настройки UV для работы без виртуального окружения
+ENV UV_SYSTEM_PYTHON=1
+ENV UV_LINK_MODE=copy
+ENV PYTHONPATH=/app/src
+
+# 5. Копируем только файлы зависимостей
 COPY pyproject.toml uv.lock ./
 
-# 5. Устанавливаем зависимости
-# Используем флаг --system, чтобы uv не создавал .venv внутри контейнера
-RUN uv sync --system --no-install-project --no-cache
+# 6. Устанавливаем зависимости
+# Убираем --no-install-project, если хотим, чтобы сам проект тоже "собрался" 
+# Либо оставляем, если важны только библиотеки
+RUN uv sync --no-cache
 
-# 6. Копируем остальной код
+
+# 7. Копируем остальной код
 COPY . .
 
 # Создаем папку для загрузок
 RUN mkdir -p /app/uploads
 
-# Указываем пути
-ENV PYTHONPATH=/app/src
-ENV UV_SYSTEM_PYTHON=1
+# Запуск приложения
+CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--app-dir", "src"]
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--app-dir", "src"]
+
