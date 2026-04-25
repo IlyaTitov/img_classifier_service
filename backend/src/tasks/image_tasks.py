@@ -1,12 +1,12 @@
-from src.app.db.db_helper import db_helper
+from app.db.db_helper import db_helper
 
-from src.celery_app import celery_app
-from src.service.yolo import yolo_service
-from src.app.db.save_result import save_result
-from src.app.models.image import Image
+from celery_app import celery_app
+from service.yolo import yolo_service
+from app.db.save_result import save_result
+from app.models.image import Image
 
 
-@celery_app.task
+@celery_app.task(name="tasks.image_tasks.process_img")
 def process_img(image_id: int):
     with db_helper.get_session_factory() as session:
         image = session.get(Image, image_id)

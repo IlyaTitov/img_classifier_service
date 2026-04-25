@@ -1,13 +1,11 @@
-from ultralytics import YOLO
 import os
 from PIL import Image as PILImage
+from ultralytics import YOLO
+from app.core.config import setting
 
 
 class YoloService:
-    def __init__(
-        self,
-        model_path: str = "D:/img_classifier_service/backend/src/weights/yolov8s.pt",
-    ):
+    def __init__(self, model_path: str = setting.yolo_model_path):
         self.model = YOLO(model_path)
 
     def predict(self, image_path: str):
@@ -18,9 +16,7 @@ class YoloService:
         detections = []
 
         for box in result.boxes:
-
             coords = box.xyxy[0].tolist()
-
             detections.append(
                 {
                     "class_id": int(box.cls),
@@ -33,7 +29,8 @@ class YoloService:
             )
 
         folder, filename = os.path.split(image_path)
-        processed_path = os.path.join(folder, f"processed_{filename}")
+        name, ext = os.path.splitext(filename)
+        processed_path = os.path.join(folder, f"processed_{name}{ext}")
 
         plot_array = result.plot()
         im = PILImage.fromarray(plot_array[..., ::-1])

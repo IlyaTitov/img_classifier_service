@@ -1,7 +1,17 @@
 from celery import Celery
-import time
-
+from app.core.config import setting
 
 celery_app = Celery(
-    "task", broker="redis://localhost:6379/0", include="src.tasks.image_tasks"
+    "img_classifier",
+    broker=setting.celery_broker_url,
+    include=["tasks.image_tasks"],
+)
+
+celery_app.conf.update(
+    task_serializer="json",
+    result_serializer="json",
+    accept_content=["json"],
+    timezone="UTC",
+    enable_utc=True,
+    broker_connection_retry_on_startup=True,
 )

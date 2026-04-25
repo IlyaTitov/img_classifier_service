@@ -2,7 +2,16 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from typing import AsyncGenerator
-from src.app.core.config import setting
+from app.core.config import setting
+
+
+def _make_sync_url(async_url: str) -> str:
+    """Convert async driver URL to sync driver URL for Celery tasks."""
+    if "+asyncpg" in async_url:
+        return async_url.replace("+asyncpg", "+psycopg2")
+    if "+aiosqlite" in async_url:
+        return async_url.replace("+aiosqlite", "")
+    return async_url
 
 
 class DatabaseHelper:
@@ -11,8 +20,8 @@ class DatabaseHelper:
         self.session_factory = async_sessionmaker(
             bind=self.engine, autoflush=False, expire_on_commit=False, autocommit=False
         )
-        sync_url = url.replace("sqlite+aiosqlite", "sqlite")
-        self.sync_engine = create_engine(url=sync_url)
+        sync_url = _make_sync_url(url)
+        self.sync_engine = create_engine(url=sync_url, echo=echo)
         self.sync_session_factory = sessionmaker(
             bind=self.sync_engine, autoflush=False, expire_on_commit=False
         )
@@ -28,4 +37,4 @@ class DatabaseHelper:
         return self.sync_session_factory()
 
 
-db_helper = DatabaseHelper(setting.datebase_url, setting.datebase_echo)
+db_helper = DatabaseHelper(setting.database_url, setting.database_echo)

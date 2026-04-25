@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKey
 from sqlalchemy import DateTime, func
 from datetime import datetime
 from .base import Base
@@ -17,5 +18,10 @@ class Image(Base):
         cascade="all, delete-orphan",
     )
 
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+
+    user: Mapped["User"] = relationship(back_populates="image")
+
     original_path: Mapped[str] = mapped_column(nullable=False)
     processed_path: Mapped[str] = mapped_column(nullable=True)
+    file_size: Mapped[int] = mapped_column(nullable=True, default=0)
