@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from typing import List
-from src.app.models.detection import Detection
-from src.app.models.image import Image
+from app.models.detection import Detection
+from app.models.image import Image
 
 
 def save_result(

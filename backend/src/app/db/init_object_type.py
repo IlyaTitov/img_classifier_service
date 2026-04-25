@@ -7,7 +7,7 @@ async def init_object_type(session_factory, class_names: dict):
     async with session_factory() as session:
         stmt = select(ObjectType).limit(1)
         r = await session.execute(stmt)
-        if r is not None:
+        if r.first() is not None:
             return
 
         for c_id, name in class_names.items():

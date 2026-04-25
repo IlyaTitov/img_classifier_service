@@ -7,8 +7,7 @@ from app.db.db_helper import db_helper
 from app.models.user import User
 from service import auth_service
 
-
-router = APIRouter(prefix="/auth", tags=["Auth"])
+router = APIRouter()
 
 
 @router.post("/login", response_model=Token)
