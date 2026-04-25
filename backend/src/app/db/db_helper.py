@@ -6,11 +6,17 @@ from app.core.config import setting
 
 
 def _make_sync_url(async_url: str) -> str:
-    """Convert async driver URL to sync driver URL for Celery tasks."""
-    if "+asyncpg" in async_url:
-        return async_url.replace("+asyncpg", "+psycopg2")
-    if "+aiosqlite" in async_url:
+    """Гарантированно превращает любой URL в синхронный для Postgres или SQLite."""
+    # 1. Если это Postgres (асинхронный или обычный), делаем его через psycopg2
+    if "postgresql" in async_url:
+        # Убираем любой драйвер и ставим psycopg2
+        base = async_url.split("://")[1]
+        return f"postgresql+psycopg2://{base}"
+
+    # 2. Если это SQLite (для тестов)
+    if "sqlite" in async_url:
         return async_url.replace("+aiosqlite", "")
+
     return async_url
 
 

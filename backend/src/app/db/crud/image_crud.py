@@ -18,9 +18,11 @@ async def get_all(session: AsyncSession) -> List[Image]:
 
 
 async def create(
-    session: AsyncSession, name: str, original_path: str, user_id: int
+    session: AsyncSession, name: str, original_path: str, user_id: int, file_size: float
 ) -> Image:
-    new_image = Image(name=name, original_path=original_path, user_id=user_id)
+    new_image = Image(
+        name=name, original_path=original_path, user_id=user_id, file_size=file_size
+    )
     session.add(new_image)
     await session.commit()
     await session.refresh(new_image)

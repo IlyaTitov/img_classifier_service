@@ -1,7 +1,4 @@
 services:
-
-  # ── Infrastructure ──────────────────────────────────────────────────────────
-
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
@@ -32,8 +29,6 @@ services:
       timeout: 3s
       retries: 10
 
-  # ── Backend ─────────────────────────────────────────────────────────────────
-
   backend:
     build:
       context: ./backend
@@ -57,19 +52,22 @@ services:
       redis:
         condition: service_healthy
 
-  # ── Celery worker ───────────────────────────────────────────────────────────
-
   celery_worker:
     build:
       context: ./backend
       dockerfile: Dockerfile
     restart: unless-stopped
-    command: >
-      sh -c "cd /app/src &&
-             celery -A celery_app worker
-             --loglevel=info
-             --concurrency=2
-             -Q celery"
+    command:
+      [
+        "uv",
+        "run",
+        "celery",
+        "-A",
+        "celery_app:celery_app",
+        "worker",
+        "--loglevel=info",
+        "--concurrency=2",
+      ]
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-img_classifier}
       CELERY_BROKER_URL: redis://redis:6379/0
@@ -86,8 +84,6 @@ services:
       redis:
         condition: service_healthy
 
-  # ── Frontend ────────────────────────────────────────────────────────────────
-
   frontend:
     build:
       context: ./frontend
@@ -97,8 +93,6 @@ services:
       - "${FRONTEND_PORT:-80}:80"
     depends_on:
       - backend
-
-  # ── Load testing (optional, run manually) ───────────────────────────────────
 
   locust:
     build:
