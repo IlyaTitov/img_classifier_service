@@ -30,6 +30,13 @@ def _image_response(image, detections=None):
     }
 
 
+@router.get("/all")
+async def get_all_images(
+    session: AsyncSession = Depends(db_helper.session_dependency),
+):
+    return await image_crud.get_all(session=session)
+
+
 @router.get("/")
 async def get_images(
     date_from: Optional[date] = Query(None),
