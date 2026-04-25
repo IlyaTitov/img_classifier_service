@@ -13,8 +13,7 @@ from app.models.user import User
 from service.auth_service import get_current_user
 from tasks.image_tasks import process_img
 
-router = APIRouter(prefix="/image")
-
+router = APIRouter()
 
 
 def _image_response(image, detections=None):
@@ -53,7 +52,6 @@ async def get_images(
 @router.post("/upload")
 async def upload(
     file: UploadFile = File(),
-    
     session: AsyncSession = Depends(db_helper.session_dependency),
     current_user: User = Depends(get_current_user),
 ):
@@ -93,9 +91,7 @@ async def get_image(
     detections = [
         {
             "id": d.id,
-            "label": (
-                d.object_type.name if d.object_type else str(d.object_type_id)
-            ),
+            "label": (d.object_type.name if d.object_type else str(d.object_type_id)),
             "confidence": d.confidence,
             "x_min": d.x_min,
             "y_min": d.y_min,
