@@ -1,8 +1,18 @@
-version: "3.8"
 services:
   redis:
     image: redis:7-alpine
     container_name: redis_app
     ports:
       - "6379:6379"
+    restart: always
+
+  postgress:
+    image: postgres:16-alpine
+    container_name: postgress_app
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=img_classifier
+    ports:
+      - "5432:5432"
     restart: always
