@@ -10,16 +10,23 @@ export type Detection = {
 
 export type ImageDetail = {
   id: number;
+
+  task_id: string | null;
   name: string;
   created_at: string | null;
   processing_complete: boolean;
+
   processed_filename: string | null;
+
   original_filename: string;
+
+  processing_duration_ms: number | null;
   detections: Detection[];
 };
 
 export type ArchiveItem = {
   id: number;
+  task_id: string | null;
   name: string;
   created_at: string | null;
   processing_complete: boolean;
@@ -27,6 +34,7 @@ export type ArchiveItem = {
   original_filename: string;
   detection_count: number;
   file_size: number;
+  processing_duration_ms: number | null;
 };
 
 export type TokenResponse = {
