@@ -24,6 +24,12 @@ function formatFileSize(bytes: number | null): string {
   return `${mb.toFixed(1)} MB`;
 }
 
+function formatDuration(ms: number | null): string {
+  if (ms == null) return "—";
+  if (ms < 1000) return `${ms} мс`;
+  return `${(ms / 1000).toFixed(1)} с`;
+}
+
 export default function ArchivePage() {
   const { token } = useAuth();
   const [items, setItems] = useState<ArchiveItem[]>([]);
@@ -159,7 +165,10 @@ export default function ArchivePage() {
                 <span className="card-date">
                   {formatDate(item.created_at)}
                   <span className="file-size-separator"> • </span>
-                  {formatFileSize(item.file_size)} {/* Вывод размера */}
+                  {formatFileSize(item.file_size)}
+                  {item.processing_duration_ms != null && (
+                    <span className="file-size-separator"> • YOLO: {formatDuration(item.processing_duration_ms)}</span>
+                  )}
                 </span>
                 <span
                   className={`card-status ${item.processing_complete ? "done" : "pending"}`}
