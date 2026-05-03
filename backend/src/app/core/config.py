@@ -1,3 +1,5 @@
+import os
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -22,16 +24,28 @@ class Setting(BaseSettings):
 
     # Celery
     celery_broker_url: str = "redis://localhost:6379/0"
+    # Redis: отдельная БД /1 для кэша
+    redis_url: str = "redis://localhost:6379/1"
 
     # YOLO
     yolo_model_path: str = "yolov8s.pt"
 
-    # CORS – comma-separated list, e.g. "http://localhost,http://localhost:3000"
+    # CORS
     cors_origins: str = "http://localhost,http://localhost:5173,http://127.0.0.1:5173"
 
     @property
     def cors_origins_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+
+    @property
+    def originals_dir(self) -> str:
+        """Каталог для оригинальных загруженных файлов."""
+        return os.path.join(self.upload_dir, "originals")
+
+    @property
+    def processed_dir(self) -> str:
+        """Каталог для файлов с нанесёнными рамками детекций."""
+        return os.path.join(self.upload_dir, "processed")
 
 
 setting = Setting()
