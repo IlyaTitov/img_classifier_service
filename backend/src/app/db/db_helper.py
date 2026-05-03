@@ -7,13 +7,12 @@ from app.core.config import setting
 
 def _make_sync_url(async_url: str) -> str:
     """Гарантированно превращает любой URL в синхронный для Postgres или SQLite."""
-    # 1. Если это Postgres (асинхронный или обычный), делаем его через psycopg2
+
     if "postgresql" in async_url:
-        # Убираем любой драйвер и ставим psycopg2
+
         base = async_url.split("://")[1]
         return f"postgresql+psycopg2://{base}"
 
-    # 2. Если это SQLite (для тестов)
     if "sqlite" in async_url:
         return async_url.replace("+aiosqlite", "")
 
@@ -22,7 +21,9 @@ def _make_sync_url(async_url: str) -> str:
 
 class DatabaseHelper:
     def __init__(self, url: str, echo: bool = False):
-        self.engine = create_async_engine(url=url, echo=echo)
+        self.engine = create_async_engine(
+            url=url, echo=echo, pool_size=20, max_overflow=10
+        )
         self.session_factory = async_sessionmaker(
             bind=self.engine, autoflush=False, expire_on_commit=False, autocommit=False
         )
