@@ -55,7 +55,7 @@ async def get_by_id(session: AsyncSession, image_id: int) -> Optional[Image]:
 
 
 async def get_status(session: AsyncSession, image_id: int) -> Optional[Image]:
-    """Загружает только поля Image без JOIN детекций — для лёгкого endpoint'а статуса."""
+
     stmt = select(Image).where(Image.id == image_id)
     result = await session.execute(stmt)
     return result.scalar_one_or_none()

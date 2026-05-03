@@ -134,16 +134,22 @@ class UploadUser(_BaseUser):
     ) -> None:
         for _ in range(max_polls):
             gevent.sleep(interval)
+            # Лёгкий endpoint /status: без JOIN детекций, минимальный ответ
             with self.client.get(
-                f"/v1/image/{image_id}",
+                f"/v1/image/{image_id}/status",
                 headers=self._auth,
                 catch_response=True,
-                name="GET /v1/image/[id] (poll)",
+                name="GET /v1/image/[id]/status (poll)",
             ) as resp:
                 if resp.status_code == 200:
                     resp.success()
-                    if resp.json().get("processing_complete"):
+                    data = resp.json()
+                    if data.get("processing_complete"):
                         return
+                    # Используем подсказку retry_after, если сервер вернул её
+                    retry = data.get("retry_after")
+                    if retry:
+                        interval = float(retry)
                 elif resp.status_code == 404:
                     resp.success()  # already cleaned up – not a failure
                     return

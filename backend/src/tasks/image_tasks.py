@@ -29,7 +29,6 @@ def process_img(image_id: int) -> str:
         )
         duration_ms = int((time.perf_counter() - t_start) * 1000)
 
-        # Сохраняем относительный путь (относительно UPLOAD_DIR)
         processed_rel: str | None = None
         if processed_abs:
             processed_rel = os.path.relpath(processed_abs, setting.upload_dir).replace(
