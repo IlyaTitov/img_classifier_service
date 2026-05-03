@@ -1,19 +1,3 @@
-"""
-Locust load test for Image Classifier Service.
-
-Scenarios:
-- UploadUser  (weight=3) – heavy user: registers, uploads photos, polls results
-- ArchiveUser (weight=2) – reader: logs in, browses archive with filters / sorting
-- StatusUser  (weight=1) – poller: re-checks statuses of already-uploaded images
-
-Run locally against a running stack:
-    locust -f locustfile.py --host http://localhost:8000
-
-Run via Docker Compose (loadtest profile):
-    docker compose --profile loadtest up locust
-Then open http://localhost:8089
-"""
-
 from __future__ import annotations
 
 import os
@@ -25,7 +9,6 @@ import gevent  # bundled with locust (gevent-based)
 from locust import HttpUser, between, events, task
 from locust.exception import StopUser
 
-# ── Test image ──────────────────────────────────────────────────────────────
 _HERE = os.path.dirname(__file__)
 _IMAGE_PATH = os.path.join(_HERE, "test_image.png")
 
@@ -35,7 +18,7 @@ with open(_IMAGE_PATH, "rb") as _f:
 TEST_IMAGE_NAME = "test_image.png"
 TEST_IMAGE_MIME = "image/png"
 
-# ── Shared state (uploaded image IDs accessible across users) ───────────────
+
 _shared_image_ids: list[int] = []
 _MAX_SHARED_IDS = 200
 
@@ -43,8 +26,6 @@ _MAX_SHARED_IDS = 200
 def _rand_suffix(n: int = 10) -> str:
     return "".join(random.choices(string.ascii_lowercase + string.digits, k=n))
 
-
-# ── Base user ────────────────────────────────────────────────────────────────
 
 class _BaseUser(HttpUser):
     abstract = True
@@ -93,8 +74,6 @@ class _BaseUser(HttpUser):
         return {"Authorization": f"Bearer {self.token}"} if self.token else {}
 
 
-# ── Upload user (weight = 3) ─────────────────────────────────────────────────
-
 class UploadUser(_BaseUser):
     """Simulates a user who actively uploads photos and waits for results."""
 
@@ -117,7 +96,6 @@ class UploadUser(_BaseUser):
             resp.success()
             image_id: int = resp.json()["id"]
 
-        # Register in local & shared pools
         self.my_image_ids.append(image_id)
         if len(self.my_image_ids) > 50:
             self.my_image_ids.pop(0)
@@ -126,7 +104,6 @@ class UploadUser(_BaseUser):
         if len(_shared_image_ids) > _MAX_SHARED_IDS:
             _shared_image_ids.pop(0)
 
-        # Poll until processing_complete or timeout (non-blocking via gevent)
         gevent.spawn(self._poll_until_done, image_id)
 
     def _poll_until_done(
@@ -134,7 +111,7 @@ class UploadUser(_BaseUser):
     ) -> None:
         for _ in range(max_polls):
             gevent.sleep(interval)
-            # Лёгкий endpoint /status: без JOIN детекций, минимальный ответ
+
             with self.client.get(
                 f"/v1/image/{image_id}/status",
                 headers=self._auth,
@@ -146,7 +123,7 @@ class UploadUser(_BaseUser):
                     data = resp.json()
                     if data.get("processing_complete"):
                         return
-                    # Используем подсказку retry_after, если сервер вернул её
+
                     retry = data.get("retry_after")
                     if retry:
                         interval = float(retry)
@@ -173,8 +150,6 @@ class UploadUser(_BaseUser):
             name="GET /v1/image/?sort_by=detection_count",
         )
 
-
-# ── Archive user (weight = 2) ─────────────────────────────────────────────────
 
 class ArchiveUser(_BaseUser):
     """Simulates a read-heavy user who browses the archive with filters."""
@@ -233,8 +208,6 @@ class ArchiveUser(_BaseUser):
                 resp.failure(f"{resp.status_code}")
 
 
-# ── Status poller user (weight = 1) ──────────────────────────────────────────
-
 class StatusUser(_BaseUser):
     """Simulates a user that repeatedly checks statuses of known images."""
 
@@ -265,8 +238,6 @@ class StatusUser(_BaseUser):
             name="GET /v1/image/ (status-user)",
         )
 
-
-# ── Custom stats event ────────────────────────────────────────────────────────
 
 @events.test_stop.add_listener
 def on_test_stop(environment, **_kwargs) -> None:
