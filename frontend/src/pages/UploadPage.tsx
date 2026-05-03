@@ -22,6 +22,12 @@ function pct(v: number) {
   return `${(v * 100).toFixed(1)} %`
 }
 
+function formatDuration(ms: number | null): string {
+  if (ms == null) return "—";
+  if (ms < 1000) return `${ms} мс`;
+  return `${(ms / 1000).toFixed(1)} с`;
+}
+
 export default function UploadPage() {
   const { token } = useAuth()
   const [phase, setPhase] = useState<Phase>({ kind: 'idle' })
@@ -198,6 +204,15 @@ export default function UploadPage() {
 
             {phase.kind === 'done' && phase.data.detections.length === 0 && (
               <p className="no-detections">Объекты не обнаружены.</p>
+            )}
+
+            {phase.kind === 'done' && (
+              <p className="status-msg" style={{ fontSize: '0.82rem', opacity: 0.7 }}>
+                Время обработки YOLO: {formatDuration(phase.data.processing_duration_ms)}
+                {phase.data.task_id && (
+                  <> &nbsp;·&nbsp; task&nbsp;id: <code>{phase.data.task_id}</code></>
+                )}
+              </p>
             )}
           </section>
         )}
